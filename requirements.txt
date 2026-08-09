@@ -21,10 +21,11 @@ hachoir
 python-decouple 
 ffmpeg
 youtube_search
-pymongo[srv] 
+pymongo[srv,tls] 
 motor 
 marshmallow==3.14.1 
 umongo
+certifi
 PyLeaves==1.0.2
 youtube-search-python==1.4.6
 opencv-python-headless==4.7.0.68 
