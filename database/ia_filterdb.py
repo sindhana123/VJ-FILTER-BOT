@@ -106,13 +106,19 @@ async def get_search_results(chat_id, query, file_type=None, max_results=10, off
         cursor2 = sec_col.find(filter).sort('$natural', -1).skip(offset).limit(max_results)
         
         for file in cursor1:
+            if file.get("file_name"):
+                file["file_name"] = file["file_name"].replace("@VJ_Bots ", "@Toonworld4all_Tamil ")
             files.append(file)
         for file in cursor2:
+            if file.get("file_name"):
+                file["file_name"] = file["file_name"].replace("@VJ_Bots ", "@Toonworld4all_Tamil ")
             files.append(file)
     else:
         cursor = col.find(filter).sort('$natural', -1).skip(offset).limit(max_results)
         
         for file in cursor:
+            if file.get("file_name"):
+                file["file_name"] = file["file_name"].replace("@VJ_Bots ", "@Toonworld4all_Tamil ")
             files.append(file)
 
     total_results = col.count_documents(filter) if not MULTIPLE_DATABASE else (col.count_documents(filter) + sec_col.count_documents(filter))
@@ -146,14 +152,21 @@ async def get_bad_files(query, file_type=None, use_filter=False):
     total_results = (count_documents(col) + count_documents(sec_col) if MULTIPLE_DATABASE else count_documents(col))
 
     def find_documents(collection):
-        return list(collection.find(filter_criteria))
+        docs = list(collection.find(filter_criteria))
+        for doc in docs:
+            if doc.get('file_name'):
+                doc['file_name'] = doc['file_name'].replace("@VJ_Bots ", "@Toonworld4all_Tamil ")
+        return docs
 
     files = (find_documents(col) + find_documents(sec_col) if MULTIPLE_DATABASE else find_documents(col))
 
     return files, total_results
 
 async def get_file_details(query):
-    return col.find_one({'file_id': query}) or sec_col.find_one({'file_id': query})
+    file = col.find_one({'file_id': query}) or sec_col.find_one({'file_id': query})
+    if file and file.get('file_name'):
+        file['file_name'] = file['file_name'].replace("@VJ_Bots ", "@Toonworld4all_Tamil ")
+    return file
 
 def encode_file_id(s: bytes) -> str:
     r = b""
