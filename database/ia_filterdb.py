@@ -58,13 +58,25 @@ async def save_file(media):
 
 def clean_file_name(file_name):
     """Clean and format the file name."""
-    file_name = re.sub(r"(_|\-|\.|\+)", " ", str(file_name)) 
-    unwanted_chars = ['[', ']', '(', ')', '{', '}']
+    file_name = str(file_name)
     
-    for char in unwanted_chars:
-        file_name = file_name.replace(char, '')
-        
-    old_file_name = ' '.join(filter(lambda x: not x.startswith('@') and not x.startswith('http') and not x.startswith('www.') and not x.startswith('t.me'), file_name.split()))
+    # Remove @usernames and URLs before they get split by punctuation
+    file_name = re.sub(r'@[a-zA-Z0-9_]+', '', file_name)
+    file_name = re.sub(r'https?://[a-zA-Z0-9_./\-]+', '', file_name)
+    file_name = re.sub(r'www\.[a-zA-Z0-9_./\-]+', '', file_name)
+    file_name = re.sub(r't\.me/[a-zA-Z0-9_./\-]+', '', file_name)
+    
+    # Replace brackets with spaces so elements like [480p]Tamil become 480p Tamil
+    file_name = re.sub(r'[\[\]\(\)\{\}]', ' ', file_name)
+    
+    # Space out resolution labels if they are attached to words (like 480pTamil)
+    file_name = re.sub(r'(?i)(480p|720p|1080p|1440p|2160p)([a-zA-Z])', r'\1 \2', file_name)
+    
+    # Replace punctuation with spaces
+    file_name = re.sub(r"(_|\-|\.|\+)", " ", file_name) 
+    
+    # Split, filter empty, and join
+    old_file_name = ' '.join(file_name.split())
     
     # Normalize season and episode strings to S0X / E0X format so they match compactly and nicely
     old_file_name = re.sub(r'(?i)season\s*0?(\d+)', lambda m: f"S{int(m.group(1)):02d}", old_file_name)
