@@ -65,12 +65,17 @@ def clean_file_name(file_name):
         file_name = file_name.replace(char, '')
         
     old_file_name = ' '.join(filter(lambda x: not x.startswith('@') and not x.startswith('http') and not x.startswith('www.') and not x.startswith('t.me'), file_name.split()))
+    
+    # Normalize season and episode strings to S0X / E0X format so they match compactly and nicely
+    old_file_name = re.sub(r'(?i)season\s*0?(\d+)', lambda m: f"S{int(m.group(1)):02d}", old_file_name)
+    old_file_name = re.sub(r'(?i)episode\s*0?(\d+)', lambda m: f"E{int(m.group(1)):02d}", old_file_name)
+    
     new_file_name = add_space_between_e_and_number(old_file_name)
     return new_file_name
 
 def add_space_between_e_and_number(input_string):
-    # Use regex to find 'e' or 'E' followed by a digit and add a space
-    output_string = re.sub(r'(e|E)([0-9])', r'1 2', input_string)
+    output_string = re.sub(r'(?<=\d)([eE])([0-9])', r' \1\2', input_string)
+    output_string = re.sub(r'(?<=[a-zA-Z])([sS])([0-9]{2})', r' \1\2', output_string)
     return output_string
     
 def is_file_already_saved(file_id, file_name):
@@ -89,6 +94,11 @@ async def get_search_results(chat_id, query, file_type=None, max_results=10, off
     """For given query return (results, next_offset)"""
     
     query = query.strip()
+    
+    # Normalize season/episode string in query to seamlessly map inline button search strings to S0X / E0X format
+    query = re.sub(r'(?i)season\s*0?(\d+)', lambda m: f"s{int(m.group(1)):02d}", query)
+    query = re.sub(r'(?i)episode\s*0?(\d+)', lambda m: f"e{int(m.group(1)):02d}", query)
+    
     if not query:
         raw_pattern = '.'
     elif ' ' not in query:
@@ -129,6 +139,10 @@ async def get_search_results(chat_id, query, file_type=None, max_results=10, off
 async def get_bad_files(query, file_type=None, use_filter=False):
     """For given query return (results, next_offset)"""
     query = query.strip()
+    
+    # Normalize season/episode string in query to seamlessly map inline button search strings to S0X / E0X format
+    query = re.sub(r'(?i)season\s*0?(\d+)', lambda m: f"s{int(m.group(1)):02d}", query)
+    query = re.sub(r'(?i)episode\s*0?(\d+)', lambda m: f"e{int(m.group(1)):02d}", query)
     
     if not query:
         raw_pattern = '.'
